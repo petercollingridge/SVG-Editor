@@ -1,0 +1,104 @@
+body {
+    font-family: Verdana, helvetica, sans-serif;
+}
+
+h1 {
+    width: 1040px;
+    font-size: 36px;
+    border-bottom: 1px solid #aaa;
+    padding-left: 20px;
+    padding-bottom: 2px;
+    margin-top: 12px;
+    margin-bottom: 0;
+    color: #111;
+    text-shadow: 1px 1px 0px #e1e1e8;
+}
+
+p {
+    margin: 5px;
+    line-height: 19px;
+    text-align: justify;
+}
+
+textarea {
+    height: 160px;
+    margin-bottom: 0;
+    outline: none;
+    width: 880px;
+}
+
+a:link { 
+    color: #86d62a;
+    text-decoration: none;
+}
+
+a:visited { 
+    color: #86d62a;
+}
+
+a:hover { 
+    text-decoration: underline;
+}
+
+.page-content {
+    font-size: 13px;
+    width: 1020px;
+    padding-left: 20px;
+}
+
+.section-content {
+    margin-left: 16px;
+}
+
+.io-box {
+    font-family: Fixed, "Courier New", monospace;
+    border: 1px #565752 solid;
+    padding: 6px 4px 6px 10px;
+}
+
+#load-button {
+    font-size: 15px;
+    padding: 4px 10px 4px 10px;
+}
+
+#output-svg {
+    height: 600px;
+    overflow: auto;
+    resize: vertical;
+}
+
+#output-area {
+    margin-top: 20px;
+}
+
+#example-svg {
+    width: 300px;
+    height: 300px;
+    float: right;
+    display: inline;
+    border: 1px #565752 solid;
+}
+
+#error-message {
+    color: red;
+}
+
+.svg-child-element {
+    margin-left: 16px;
+}
+
+.svg-element-div:hover {
+    cursor: pointer;
+}
+
+.highlight {
+    background: #ddd;
+}
+
+.footer {
+    font-size: 10px;
+    padding-top: 16px;
+    padding-left: 20px;
+    padding-bottom: 1px;
+    clear: both;
+}
