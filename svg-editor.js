@@ -1,3 +1,15 @@
+var SVG_Element = function(tag, attributes, data, children) {
+
+};
+
+var SVG_Tree = function(svg_string) {
+    svg_string = svg_string.replace(/^[\s\n]*/, "");
+    var svg_doc = $.parseXML( svg_string );
+    this.tree = $(svg_doc).children()[0];
+};
+
+var svg_obj;
+
 var outputElement = function(output, element) {
     var tag_name = element.nodeName;
     var element_string = "<" + tag_name;
@@ -82,11 +94,8 @@ var displayElement = function(evt) {
 };
 
 var loadSVG = function() {
-    var SVG_string = $("#input-svg").val().replace(/^[\s\n]*/, "");
-    var SVG_doc = $.parseXML( SVG_string );
-    var SVG = $(SVG_doc).children()[0];
-    var output = $('#output-svg');
-    outputElement(output, SVG);
+    svg_tree = new SVG_Tree($("#input-svg").val());
+    outputElement($('#output-svg'), svg_tree.tree);
 
     $('.svg-element-div').hover(function(evt) {
                                     $('.svg-element-div').removeClass('highlight');
