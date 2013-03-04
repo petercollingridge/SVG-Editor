@@ -67,15 +67,27 @@ var writeElement = function(element) {
     }
 }
 
-var displayElement = function(evt) {
+var displayElementAsSVG = function(evt) {
     // Write element and its children in a scaled SVG
 
     evt.stopPropagation();
     var svg = $('#example-svg');
     var width = svg.css('width').slice(0, -2);
     var height = svg.css('height').slice(0, -2);
+    var boxes = 7
+    var bx = width / boxes;
+    var by = height / boxes;
 
     var str = '<svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="' + width + '" height="' + height + '">';
+
+    for (var x=0; x<boxes; x++) {
+        for (var y=0; y<boxes; y++) {
+            if ((x + y) % 2) {
+                str += '<rect x="' + (x * bx) + '" y="' + (y * by) + '" width="' + bx + '" height="' + by + '" fill="#bbb" />'
+            }
+        }        
+    }
+
     str += '<g id="example">';
     str += writeElement($(this));
     str += '</g>';
@@ -106,7 +118,7 @@ var loadSVG = function() {
                                     $(this).removeClass('highlight');
                                 });
 
-    $('.svg-element-div').click(displayElement);
+    $('.svg-element-div').click(displayElementAsSVG);
 };
 
 $(document).ready(function() {
