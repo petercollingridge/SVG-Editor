@@ -71,12 +71,16 @@ a:hover {
     margin-top: 20px;
 }
 
-#example-svg {
-    width: 300px;
-    height: 300px;
+.svg-image-container {
+    width: 302px;
     float: right;
     display: inline;
+}
+
+.svg-image {
+    height: 300px;
     border: 1px #565752 solid;
+    margin: 1px;
 }
 
 #error-message {

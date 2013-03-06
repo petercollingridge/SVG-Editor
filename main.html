@@ -23,7 +23,37 @@
         </div>
       
         <div id="output-area" style="display:none;">
-            <div id="example-svg"></div>
+            <div class="svg-image-container">
+                <div class="svg-image" id="full-svg">
+                    <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="300" height="300">
+                        <script type="text/ecmascript"><![CDATA[
+                            var resize = function() {
+                                var eg = document.getElementById("svg-wrapper");
+                                var size = eg.getBBox();
+                                console.log("resize " + size.width);
+                                if (size.width > 0) {
+                                    var scale;
+                                    var dx = -size.x;
+                                    var dy = -size.y;
+                                    
+                                    if (size.width > size.height) {
+                                        scale = 290 / size.width;
+                                        dy -= size.y + 0.5 * (size.width - size.height);
+                                    } else {
+                                        scale = 290 / size.height;
+                                        dx -= size.x + 0.5 * (size.height - size.width);
+                                    }
+                                    var transform = "translate(5 5) scale(" + scale + ") translate(" + dx + " " + dy + ")";
+                                    eg.setAttributeNS(null, "transform", transform);
+                                }
+                            }
+                        ]]></script>
+                        <g id="svg-wrapper">
+                        </g>
+                    </svg>
+                </div>
+                <div class="svg-image" id="sub-svg"></div>
+            </div>
             <div id="output-svg" class="io-box"></div>
         </div>
 
