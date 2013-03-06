@@ -118,9 +118,8 @@ var SVG_Element = function(element, element_list) {
         }
     }
     
-    this.writeTag = function(writeAttributes, dp_function) {
-        // Write a tag and its attributes
-        
+    // Write a tag and its attributes
+    this.writeTag = function(writeAttributes, dp_function) {        
         var tag = '<' + this.tag;
         
         if (writeAttributes) {
@@ -131,7 +130,6 @@ var SVG_Element = function(element, element_list) {
             }
         }
         tag += this.children.length === 0 ? '/>' : '>';
-        
         return tag;
     };
     
@@ -148,9 +146,29 @@ var SVG_Element = function(element, element_list) {
                 }
             }
         }
-        
         return coord_string;
     };
+    
+    this.toString = function(dp_function) {
+        var str = '\n' + this.writeTag(true, dp_function);
+        
+        $(this.children).each( function(i) {
+            str += this.toString(dp_function);
+        });
+        
+        if (this.children.length !== 0) { str += "\n</" + this.tag + ">"; }
+        return str;
+    };
+    
+    this.toJQueryObject = function(parent) {
+        var $element = $('<' + this.tag + '></' + this.tag + '>');
+        parent.append($element);
+        $element.attr(this.attributes);
+        
+        $(this.children).each( function(i) {
+            $element.append(this.toJQueryObject($element));
+        });
+    }
     
     this.nestedOutput = function(output, dp_function) {
         // Output by adding a div to the output and write children as nested divs
@@ -218,42 +236,47 @@ var SVG_Tree = function(svg_string) {
 var svg_obj;
 
 var writeElement = function(element) {
-    var children = element.children();
+    var $element = $(element);
+    var children = $element.children();
 
     if (children.length === 0) {
-        return element.html().replace("&lt;", "<").replace("&gt;", ">");
+        return $element.html().replace("&lt;", "<").replace("&gt;", ">");
     } else {
         var str = ""
         for (var i=0; i<children.length; i++) {
-            str += writeElement($(children[i]));
+            str += writeElement(children[i]);
         }
         return str;
     }
 }
 
-var displayElementAsSVG = function(evt) {
-    // Write element and its children in a scaled SVG
-
-    evt.stopPropagation();
-    var svg = $('#example-svg');
-    var width = svg.css('width').slice(0, -2);
-    var height = svg.css('height').slice(0, -2);
-    var boxes = 7
-    var bx = width / boxes;
-    var by = height / boxes;
-
-    var str = '<svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="' + width + '" height="' + height + '">';
-
-    for (var x=0; x<boxes; x++) {
-        for (var y=0; y<boxes; y++) {
+var drawCheckeredBackground = function(nboxes, width, height) {   
+    var str = "";
+    var bx = width / nboxes;
+    var by = height / nboxes;
+    
+    for (var x=0; x<nboxes; x++) {
+        for (var y=0; y<nboxes; y++) {
             if ((x + y) % 2) {
                 str += '<rect x="' + (x * bx) + '" y="' + (y * by) + '" width="' + bx + '" height="' + by + '" fill="#bbb" />'
             }
         }        
     }
+    
+    return str;
+}
 
+var displayElementAsSVG = function(output, element, boxes) {
+    // Write element and its children in a scaled SVG
+
+    var width = output.css('width').slice(0, -2);
+    var height = output.css('height').slice(0, -2);
+    var str = '<svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="' + width + '" height="' + height + '">';
+
+    if (boxes) { str += drawCheckeredBackground(boxes, width, height); }
+    
     str += '<g id="example">';
-    str += writeElement($(this));
+    str += writeElement(element);
     str += '</g>';
     str += '<script type="text/ecmascript"><![CDATA['
     str += 'var eg = document.getElementById("example");'
@@ -266,8 +289,31 @@ var displayElementAsSVG = function(evt) {
     str += ']]></script>'
     str += '</svg>';
 
-    svg.html(str);
+    output.html(str);
 };
+
+var drawFullSVG = function($container, $output, svg_tree) {    
+    $(svg_tree.root.children).each( function(i) {
+        this.toJQueryObject($output);
+    });
+    
+    // Hack to reload the SVG
+    $container.html($container.html());
+
+    var resize = function() {
+        var size = $('#full-svg > svg > #svg-wrapper')[0].getBBox();
+        if (size.width > 0) {
+            var scale = Math.max(size.width, size.height) + 10;
+            var dx = size.x - 5;
+            var dy = size.y - 5;
+            var viewbox = dx + " " + dy + " " + scale + " " + scale;
+            document.getElementById("full-svg").childNodes[1].setAttribute("viewBox", viewbox);
+        }
+    };
+    
+    window.setTimeout(resize, 100);
+    //$(window).ready(resize);
+}
 
 var loadSVG = function() {
     svg_tree = new SVG_Tree($("#input-svg").val());
@@ -284,7 +330,12 @@ var loadSVG = function() {
                                     $(this).removeClass('highlight');
                                 });
 
-    $('.svg-element-div').click(displayElementAsSVG);
+    $('.svg-element-div').click(function(evt) {
+        evt.stopPropagation();
+        displayElementAsSVG($('#sub-svg'), this, 7);
+    });
+    
+    drawFullSVG($("#full-svg"), $("#full-svg > svg > g"), svg_tree);
 };
 
 $(document).ready(function() {
@@ -293,4 +344,5 @@ $(document).ready(function() {
         $('#input-area').hide();
         $('#output-area').show();
     });
+    
 });
