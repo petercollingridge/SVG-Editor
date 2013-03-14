@@ -42,8 +42,6 @@ a:hover {
 
 .page-content {
     font-size: 13px;
-    width: 1020px;
-    padding-left: 20px;
 }
 
 .section-content {
@@ -61,26 +59,37 @@ a:hover {
     padding: 4px 10px 4px 10px;
 }
 
-#output-svg-tree {
-    height: 632px;
-    overflow: auto;
-    resize: vertical;
-}
-
 #output-area {
     margin-top: 20px;
 }
 
+#svg-tree {
+    width: 320px;
+    height: 631px;
+    overflow: auto;
+    resize: vertical;
+    display: inline-block;
+    float: left;
+}
+
+#svg-analysis {
+    height: 631px;
+    overflow: auto;
+}
+
 .svg-image-container {
     float: right;
-    display: inline;
+    display: inline-block;
 }
 
 .svg-image {
     width: 320px;
     height: 320px;
     border: 1px #565752 solid;
-    margin: 1px;
+}
+
+#sub-svg {
+    margin-top: 1px;
 }
 
 #error-message {
