@@ -56,13 +56,13 @@ a:hover {
     padding: 6px 4px 6px 10px;
 }
 
-#load-button {
+.button{
     font-size: 15px;
     padding: 4px 10px 4px 10px;
 }
 
-#output-svg {
-    height: 600px;
+#output-svg-tree {
+    height: 632px;
     overflow: auto;
     resize: vertical;
 }
@@ -72,13 +72,13 @@ a:hover {
 }
 
 .svg-image-container {
-    width: 302px;
     float: right;
     display: inline;
 }
 
 .svg-image {
-    height: 300px;
+    width: 320px;
+    height: 320px;
     border: 1px #565752 solid;
     margin: 1px;
 }
