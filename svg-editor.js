@@ -1,10 +1,14 @@
 var defaultStyles = {
     "display": "inline",
-    "visibility": "visible",
+    "visibility": "visible",  // Should remove hidden elements or those with opacity 0
     "opacity": "1",
-    "fill": "#000000",
+    "fill": "#000000",      // or black or #000
     "fill-opacity": "1",
-    "stroke": "none",
+    "marker": "none",
+    "marker-start": "none",
+    "marker-mid": "none",
+    "marker-end": "none",
+    "stroke": "none",       // or 0
     "stroke-width": "1",
     "stroke-opacity": "1",
     "stroke-miterlimit": "4",
@@ -62,15 +66,12 @@ var extractDigits = function(digit_string) {
     
     if (!digit_string) {return;}
     
-    var digit_strings = digit_string.split(/[\s,]+/);
+    var re_digits = /([-+]?[\d\.]+)([eE][-+]?[\d\.]+)?/g;
     var digits = [];
     
-    for (var i=0 in digit_strings) {
-        if (digit_strings[i]) {
-            digits.push(parseFloat(digit_strings[i]));
-        }
+    while(digit = re_digits.exec(digit_string)){
+        digits.push(parseFloat(digit));
     }
-    
     return digits;
 };
 
@@ -89,18 +90,28 @@ var parsePath = function(coord_string) {
     return [command_letters, command_values];
 }
 
-var SVG_Element = function(element, element_list) {
+var SVG_Element = function(element, element_hash) {
     this.tag = element.nodeName;
-    element_list.push(this.tag);
     
     // Attributes
     this.attributes = {};
+    this.id;
+    
     if (element.attributes) {
         for (var i=0; i<element.attributes.length; i++){
             var attr = element.attributes.item(i);
             this.attributes[attr.nodeName] = attr.nodeValue;
         }
+        this.id = this.attributes.id;
     }
+    
+    // If no id, then generatate a new one for look-up
+    if (!this.id) {
+        var n = 0;
+        while (element_hash['id' + n]) { n++; }
+        this.id = 'id' + n;
+    }
+    element_hash[this.id] = this;
     
     // Parse path coordinates
     if (this.tag === "path") {
@@ -114,7 +125,7 @@ var SVG_Element = function(element, element_list) {
     for (var i=0; i<element.childNodes.length; i++) {
         var child = element.childNodes[i];
         if (child.data === undefined || child.data.replace(/^\s*/, "") !== "") {
-            this.children.push(new SVG_Element(child, element_list));
+            this.children.push(new SVG_Element(child, element_hash));
         }
     }
     
@@ -173,8 +184,9 @@ var SVG_Element = function(element, element_list) {
     this.nestedOutput = function(output, dp_function) {
         // Output by adding a div to the output and write children as nested divs
         
-        var element_string = this.writeTag(true, dp_function);
+        var element_string = this.writeTag(false, dp_function);
         var element_div = $('<div></div>');
+        element_div.attr({id: this.id});
         element_div.addClass("svg-element-div");
         output.append(element_div);        
         
@@ -208,14 +220,30 @@ var SVG_Element = function(element, element_list) {
             this.children[child].cleanStyles(dp_function);
         }
     }
+    
+    this.removeNamespaces = function(namespaces) {
+        for (ns in namespaces) {
+            for (attr in this.attributes) {
+                var attr_split = attr.split(':');
+                if (attr_split.length === 2 && attr_split[0] === namespaces[ns]) {
+                    delete this.attributes[attr];
+                }
+            }
+        }
+        
+        for (var child in this.children) {
+            this.children[child].removeNamespaces(namespaces);
+        }
+    };
 };
 
 var SVG_Tree = function(svg_string) {
+    // Wrapper for tree of elements within the SVG
     svg_string = svg_string.replace(/^[\s\n]*/, "");
     var svg_doc = $.parseXML( svg_string );
     this.tree = $(svg_doc).children()[0];
     
-    this.elements = [];
+    this.elements = {};
     this.root = new SVG_Element(this.tree, this.elements);
     
     this.setDecimalPlaces = function (decimal_places) {
@@ -227,99 +255,98 @@ var SVG_Tree = function(svg_string) {
         this.root.cleanStyles(this.dp_function);
     };
     
+    this.removeNamespaces = function(namespaces) {
+        this.root.removeNamespaces(namespaces);
+    };
+    
     this.nestedOutput = function(output) {
         this.root.nestedOutput(output, this.dp_function);
     };
     
 };
 
-var svg_obj;
+var svg_tree;
 
-var writeElement = function(element) {
-    var $element = $(element);
-    var children = $element.children();
-
-    if (children.length === 0) {
-        return $element.html().replace("&lt;", "<").replace("&gt;", ">");
-    } else {
-        var str = ""
-        for (var i=0; i<children.length; i++) {
-            str += writeElement(children[i]);
-        }
-        return str;
-    }
-}
-
-var drawCheckeredBackground = function(nboxes, width, height) {   
-    var str = "";
-    var bx = width / nboxes;
-    var by = height / nboxes;
-    
-    for (var x=0; x<nboxes; x++) {
-        for (var y=0; y<nboxes; y++) {
-            if ((x + y) % 2) {
-                str += '<rect x="' + (x * bx) + '" y="' + (y * by) + '" width="' + bx + '" height="' + by + '" fill="#bbb" />'
-            }
-        }        
-    }
-    
-    return str;
-}
-
-var displayElementAsSVG = function(output, element, boxes) {
-    // Write element and its children in a scaled SVG
-
-    var width = output.css('width').slice(0, -2);
-    var height = output.css('height').slice(0, -2);
-    var str = '<svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="' + width + '" height="' + height + '">';
-
-    if (boxes) { str += drawCheckeredBackground(boxes, width, height); }
-    
-    str += '<g id="example">';
-    str += writeElement(element);
-    str += '</g>';
-    str += '<script type="text/ecmascript"><![CDATA['
-    str += 'var eg = document.getElementById("example");'
-    str += 'var size = eg.getBBox();'
-    str += 'var scale, dx, dy;'
-    str += 'if (size.width > size.height) { scale = ' + (width-10) + ' / size.width; dx = -size.x; dy = -size.y + 0.5 * (size.width - size.height); }'
-    str += 'else { scale = ' + (height-10) + ' / size.height; dx = -size.x + 0.5 * (size.height - size.width); dy = -size.y; }'
-    str += 'var transform = "translate(5 5) scale(" + scale + ") translate(" + dx + " " + dy + ")";'
-    str += 'eg.setAttributeNS(null, "transform", transform);'
-    str += ']]></script>'
-    str += '</svg>';
-
-    output.html(str);
+var removeHighlight = function(evt) {
+    console.log("A");
+    var highlight = document.getElementById("highlight-rect");
+    highlight.setAttributeNS(null, "visibility", "hidden");
 };
 
-var drawFullSVG = function($container, $output, svg_tree) {    
-    $(svg_tree.root.children).each( function(i) {
-        this.toJQueryObject($output);
+var handleCodeClick = function(evt) {
+    evt.stopPropagation();
+    var id = $(this).attr('id');
+    var element = svg_tree.elements[id];
+    var size = drawSVG("sub-svg", [element]);
+    
+    var highlight = document.getElementById("highlight-rect");
+    highlight.setAttributeNS(null, "x", size.x);
+    highlight.setAttributeNS(null, "y", size.y);
+    highlight.setAttributeNS(null, "width", size.width);
+    highlight.setAttributeNS(null, "height", size.height);
+    highlight.setAttributeNS(null, "visibility", "visible");
+    
+    /*
+    var $highlight = $('<rect />');
+    $highlight.attr({x: size.x,
+                     y: size.y,
+                     width: size.width, 
+                     height: size.height,
+                     fill: "none",
+                     "stroke-width": 4,
+                     stroke: '#f00'});
+    console.log($highlight[0].outerHTML);
+    $('#full-svg-wrapper').append($highlight[0].outerHTML);
+    */
+    
+    var $container = $('#full-svg');
+    $container.html($container.html());
+};
+
+var drawSVG = function(container, elements) {
+    var container_id = "#" + container;
+    var $container = $(container_id);
+    var $svg_wrapper = $(container_id + "-wrapper");
+    var width = $container.css('width').slice(0, -2);
+    
+    $svg_wrapper.empty();
+    $(elements).each( function(i) {
+        this.toJQueryObject($svg_wrapper);
     });
     
     // Hack to reload the SVG
     $container.html($container.html());
-
+    
     var resize = function() {
-        var size = $('#full-svg > svg > #svg-wrapper')[0].getBBox();
+        var size = $(container_id + "-wrapper")[0].getBBox();
         if (size.width > 0) {
-            var scale = Math.max(size.width, size.height) + 10;
-            var dx = size.x - 5;
-            var dy = size.y - 5;
-            var viewbox = dx + " " + dy + " " + scale + " " + scale;
-            document.getElementById("full-svg").childNodes[1].setAttribute("viewBox", viewbox);
+            var scale, dx, dy;
+            if (size.width > size.height) {
+                scale = (width - 10) / size.width;
+                dx = -size.x;
+                dy = -size.y + 0.5 * (size.width - size.height);
+            } else {
+                scale = (width - 10) / size.height;
+                dx = -size.x + 0.5 * (size.height - size.width);
+                dy = -size.y;
+            }
+            var transform = "translate(5 5) scale(" + scale + ") translate(" + dx + " " + dy + ")";
+            document.getElementById(container + "-transform").setAttributeNS(null, "transform", transform);
         }
     };
     
-    window.setTimeout(resize, 100);
+    // Need to wait a bit to ensure elements drawn
+    var size = window.setTimeout(resize, 100);
     //$(window).ready(resize);
-}
+    return $(container_id + "-wrapper")[0].getBBox();;
+};
 
-var loadSVG = function() {
-    svg_tree = new SVG_Tree($("#input-svg").val());
+var loadSVG = function(svg_string) {
+    svg_tree = new SVG_Tree(svg_string);
     svg_tree.cleanStyles();
+    svg_tree.removeNamespaces(["inkscape", "sodipodi"]);
     //svg_tree.setDecimalPlaces(2);
-    svg_tree.nestedOutput($('#output-svg'));
+    svg_tree.nestedOutput($('#output-svg-tree'));
 
     $('.svg-element-div').hover(function(evt) {
                                     $('.svg-element-div').removeClass('highlight');
@@ -330,19 +357,27 @@ var loadSVG = function() {
                                     $(this).removeClass('highlight');
                                 });
 
-    $('.svg-element-div').click(function(evt) {
-        evt.stopPropagation();
-        displayElementAsSVG($('#sub-svg'), this, 7);
-    });
+    $('.svg-element-div').click(handleCodeClick);
     
-    drawFullSVG($("#full-svg"), $("#full-svg > svg > g"), svg_tree);
+    drawSVG("full-svg", svg_tree.root.children);
 };
 
 $(document).ready(function() {
-    $("#load-button").on("click", function(event) {
-        loadSVG();
+    $('#scientist-example').hide();
+    
+    $('#load-button').on('click', function(event) {
+        loadSVG($('#input-svg').val());
         $('#input-area').hide();
         $('#output-area').show();
     });
+    
+    $('#load-example-button').on('click', function(event) {
+        loadSVG($('#scientist-example').html());
+        $('#input-area').hide();
+        $('#example-svg-attribution').show();
+        $('#output-area').show();
+    });
+    
+    $('#full-svg').click(removeHighlight);
     
 });
