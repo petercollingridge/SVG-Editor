@@ -130,18 +130,22 @@ var SVG_Element = function(element, element_hash) {
     }
     
     // Write a tag and its attributes
-    this.writeTag = function(writeAttributes, dp_function) {        
+    this.writeTag = function(dp_function) {     
         var tag = '<' + this.tag;
-        
-        if (writeAttributes) {
-            for (var attr in this.attributes){
-                tag += ' ' + attr + '="';
-                tag += this.tag === "path" && attr === "d" ? this.writePath(dp_function) : dp_function(this.attributes[attr]);
-                tag += '"';
-            }
+    
+        for (var attr in this.attributes){
+            tag += ' ' + attr + '="';
+            tag += this.tag === "path" && attr === "d" ? this.writePath(dp_function) : dp_function(this.attributes[attr]);
+            tag += '"';
         }
+
         tag += this.children.length === 0 ? '/>' : '>';
         return tag;
+    };
+
+    //
+    this.writeElementName = function(dp_function) {
+        return this.tag;
     };
     
     this.writePath = function(dp_function) {
@@ -179,13 +183,14 @@ var SVG_Element = function(element, element_hash) {
         $(this.children).each( function(i) {
             $element.append(this.toJQueryObject($element));
         });
-    }
+    };
     
-    this.nestedOutput = function(output, dp_function) {
+    this.nestedOutput = function(output, write_function, dp_function) {
         // Output by adding a div to the output and write children as nested divs
         
-        var element_string = this.writeTag(false, dp_function);
+        var element_string = this[write_function](dp_function);
         var element_div = $('<div></div>');
+
         element_div.attr({id: this.id});
         element_div.addClass("svg-element-div");
         output.append(element_div);        
@@ -199,7 +204,7 @@ var SVG_Element = function(element, element_hash) {
             // Create div for child elements
             var child_elements = $('<div></div>').addClass("svg-child-element");
             $(this.children).each( function(i) {
-                this.nestedOutput(child_elements, dp_function);
+                this.nestedOutput(child_elements, write_function, dp_function);
             });
             element_div.append(child_elements);
             
@@ -219,7 +224,7 @@ var SVG_Element = function(element, element_hash) {
         for (var child in this.children) {
             this.children[child].cleanStyles(dp_function);
         }
-    }
+    };
     
     this.removeNamespaces = function(namespaces) {
         for (ns in namespaces) {
@@ -260,7 +265,7 @@ var SVG_Tree = function(svg_string) {
     };
     
     this.nestedOutput = function(output) {
-        this.root.nestedOutput(output, this.dp_function);
+        this.root.nestedOutput(output, 'writeElementName', this.dp_function);
     };
     
 };
@@ -277,8 +282,18 @@ var handleCodeClick = function(evt) {
     evt.stopPropagation();
     var id = $(this).attr('id');
     var element = svg_tree.elements[id];
+
+    // Write element code
+    var element_code = $('#svg-analysis');
+    var element_code_div = $('<div></div>').addClass("svg-child-element");
+
+    element_code.empty();
+    element_code.append($('<div>' + element.tag + " element" + '</div>'));
+    element.nestedOutput(element_code_div, 'writeTag', svg_tree.dp_function);
+    element_code.append(element_code_div);
+
+    // Draw red box
     var size = drawSVG("sub-svg", [element]);
-    
     var highlight = document.getElementById("highlight-rect");
     highlight.setAttributeNS(null, "x", size.x);
     highlight.setAttributeNS(null, "y", size.y);
@@ -286,19 +301,7 @@ var handleCodeClick = function(evt) {
     highlight.setAttributeNS(null, "height", size.height);
     highlight.setAttributeNS(null, "visibility", "visible");
     
-    /*
-    var $highlight = $('<rect />');
-    $highlight.attr({x: size.x,
-                     y: size.y,
-                     width: size.width, 
-                     height: size.height,
-                     fill: "none",
-                     "stroke-width": 4,
-                     stroke: '#f00'});
-    console.log($highlight[0].outerHTML);
-    $('#full-svg-wrapper').append($highlight[0].outerHTML);
-    */
-    
+    // Refresh SVG
     var $container = $('#full-svg');
     $container.html($container.html());
 };
@@ -346,7 +349,7 @@ var loadSVG = function(svg_string) {
     svg_tree.cleanStyles();
     svg_tree.removeNamespaces(["inkscape", "sodipodi"]);
     //svg_tree.setDecimalPlaces(2);
-    svg_tree.nestedOutput($('#output-svg-tree'));
+    svg_tree.nestedOutput($('#svg-tree'));
 
     $('.svg-element-div').hover(function(evt) {
                                     $('.svg-element-div').removeClass('highlight');
