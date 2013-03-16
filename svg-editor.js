@@ -129,6 +129,30 @@ var SVG_Element = function(element, element_hash) {
         }
     }
     
+    // Create series of divs for element with syntax highlighting on attributes
+    this.attachElement = function() {
+        var element_name_div = $('#element-name');
+        element_name_div.text(this.tag + " element");
+    
+        var attributes_name_div = $('#element-attributes');
+        attributes_name_div.empty();
+        
+        attributes_name_div.append($('<h3>attributes</h3>'));
+        
+        if (this.attributes) {
+            var table = $('<table></table>');
+            
+            for (var attr in this.attributes){
+                var row = $('<tr></tr>');
+                row.append($('<td>' + attr + '</td>'));
+                row.append($('<td>' + this.attributes[attr] + '</td>'));
+                table.append(row); 
+            }   
+            attributes_name_div.append(table)
+        }
+        
+    }
+    
     // Write a tag and its attributes
     this.writeTag = function(dp_function) {     
         var tag = '<' + this.tag;
@@ -141,11 +165,6 @@ var SVG_Element = function(element, element_hash) {
 
         tag += this.children.length === 0 ? '/>' : '>';
         return tag;
-    };
-
-    //
-    this.writeElementName = function(dp_function) {
-        return this.tag;
     };
     
     this.writePath = function(dp_function) {
@@ -185,10 +204,9 @@ var SVG_Element = function(element, element_hash) {
         });
     };
     
-    this.nestedOutput = function(output, write_function, dp_function) {
+    this.nestedOutput = function(output, dp_function) {
         // Output by adding a div to the output and write children as nested divs
         
-        var element_string = this[write_function](dp_function);
         var element_div = $('<div></div>');
 
         element_div.attr({id: this.id});
@@ -196,20 +214,17 @@ var SVG_Element = function(element, element_hash) {
         output.append(element_div);        
         
         if (this.children.length === 0) {
-            element_div.text(element_string);
+            element_div.text(this.tag);
         } else {
             // Add start tag as separate div
-            element_div.append($('<div></div>').text(element_string));
+            element_div.append($('<div></div>').text(this.tag));
             
             // Create div for child elements
             var child_elements = $('<div></div>').addClass("svg-child-element");
             $(this.children).each( function(i) {
-                this.nestedOutput(child_elements, write_function, dp_function);
+                this.nestedOutput(child_elements, dp_function);
             });
             element_div.append(child_elements);
-            
-            // Add end tag as separate div
-            element_div.append($('<div></div>').text("</" + this.tag + ">"));
         }
     };
     
@@ -265,7 +280,7 @@ var SVG_Tree = function(svg_string) {
     };
     
     this.nestedOutput = function(output) {
-        this.root.nestedOutput(output, 'writeElementName', this.dp_function);
+        this.root.nestedOutput(output, this.dp_function);
     };
     
 };
@@ -273,7 +288,6 @@ var SVG_Tree = function(svg_string) {
 var svg_tree;
 
 var removeHighlight = function(evt) {
-    console.log("A");
     var highlight = document.getElementById("highlight-rect");
     highlight.setAttributeNS(null, "visibility", "hidden");
 };
@@ -284,13 +298,7 @@ var handleCodeClick = function(evt) {
     var element = svg_tree.elements[id];
 
     // Write element code
-    var element_code = $('#svg-analysis');
-    var element_code_div = $('<div></div>').addClass("svg-child-element");
-
-    element_code.empty();
-    element_code.append($('<div>' + element.tag + " element" + '</div>'));
-    element.nestedOutput(element_code_div, 'writeTag', svg_tree.dp_function);
-    element_code.append(element_code_div);
+    element.attachElement();
 
     // Draw red box
     var size = drawSVG("sub-svg", [element]);
@@ -346,8 +354,8 @@ var drawSVG = function(container, elements) {
 
 var loadSVG = function(svg_string) {
     svg_tree = new SVG_Tree(svg_string);
-    svg_tree.cleanStyles();
-    svg_tree.removeNamespaces(["inkscape", "sodipodi"]);
+    //svg_tree.cleanStyles();
+    //svg_tree.removeNamespaces(["inkscape", "sodipodi"]);
     //svg_tree.setDecimalPlaces(2);
     svg_tree.nestedOutput($('#svg-tree'));
 
@@ -363,6 +371,12 @@ var loadSVG = function(svg_string) {
     $('.svg-element-div').click(handleCodeClick);
     
     drawSVG("full-svg", svg_tree.root.children);
+    
+    // Rearrange window
+    $('#input-area').hide();
+    $('#output-area').show();
+    $('#toolbar-optimise').addClass("enabled");
+    $('#toolbar-output').addClass("enabled");
 };
 
 $(document).ready(function() {
@@ -370,17 +384,12 @@ $(document).ready(function() {
     
     $('#load-button').on('click', function(event) {
         loadSVG($('#input-svg').val());
-        $('#input-area').hide();
-        $('#output-area').show();
     });
     
     $('#load-example-button').on('click', function(event) {
         loadSVG($('#scientist-example').html());
-        $('#input-area').hide();
         $('#example-svg-attribution').show();
-        $('#output-area').show();
     });
     
     $('#full-svg').click(removeHighlight);
-    
 });
