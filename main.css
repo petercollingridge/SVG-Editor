@@ -1,17 +1,6 @@
 body {
     font-family: Verdana, helvetica, sans-serif;
-}
-
-h1 {
-    width: 1040px;
-    font-size: 36px;
-    border-bottom: 1px solid #aaa;
-    padding-left: 20px;
-    padding-bottom: 2px;
-    margin-top: 12px;
-    margin-bottom: 0;
-    color: #111;
-    text-shadow: 1px 1px 0px #e1e1e8;
+    margin: 0;
 }
 
 p {
@@ -20,38 +9,86 @@ p {
     text-align: justify;
 }
 
-textarea {
-    height: 160px;
-    margin-bottom: 0;
-    outline: none;
-    width: 880px;
+h2 {
+    font-size: 16px;
+    margin-left: 10px;
+    color: #444;
+}
+
+#header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border-bottom: 1px solid #aaa;
+    padding-left: 16px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin: 0;
+    background: #eee;
+    -moz-box-shadow:    0 1px 5px 0 #ccc;
+    -webkit-box-shadow: 0 1px 5px 0 #ccc;
+    box-shadow:         0 1px 5px 0 #ccc;
+}
+
+#footer {
+    position:fixed;
+    bottom:0;
+    left:0;
+    width: 100%;
+    font-size: 10px;
+    border-top: 1px solid #aaa;
+    padding-left: 16px;
+    padding-top: 4px;
+    padding-bottom: 3px;
+    margin: 0;
+    color: #222;
+    background: #eee;
 }
 
 a:link { 
-    color: #86d62a;
+    color: #004080;
     text-decoration: none;
 }
 
 a:visited { 
-    color: #86d62a;
+    color: #004080;
 }
 
 a:hover { 
     text-decoration: underline;
 }
 
-.page-content {
-    font-size: 13px;
+#title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #222;
+    text-shadow: 1px 1px 0px #e1e1e8;
 }
 
-.section-content {
-    margin-left: 16px;
+.header-item {
+    font-size: 14px;
+    color: #999;
+    margin-left: 10px;
+}
+
+.header-item.enabled {
+    color: #333;
+    cursor: pointer;
+}
+
+.header-item.enabled:hover {
+    text-decoration: underline;
+}
+
+.page-content {
+    font-size: 13px;
+    margin-top: 36px;
 }
 
 .io-box {
     font-family: Fixed, "Courier New", monospace;
-    border: 1px #565752 solid;
-    padding: 6px 4px 6px 10px;
+    padding: 0 10px 24px 10px;
 }
 
 .button{
@@ -59,41 +96,53 @@ a:hover {
     padding: 4px 10px 4px 10px;
 }
 
+#input-area {
+    margin: 8px;
+}
+
+#input-area textarea {
+    height: 200px;
+    border: 1px #888 solid;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+}
+
 #output-area {
     margin-top: 20px;
 }
 
 #svg-tree {
-    width: 320px;
-    height: 631px;
+    width: 240px;
+    height: 100%;
     overflow: auto;
-    resize: vertical;
     display: inline-block;
     float: left;
+    border-right: 1px #bbb solid;
 }
 
 #svg-analysis {
-    height: 631px;
+    height: 100%;
     overflow: auto;
+}
+
+tr:hover {
+    cursor: pointer;
+    background: #ddd;
 }
 
 .svg-image-container {
     float: right;
     display: inline-block;
+    margin-right: 2px;
 }
 
 .svg-image {
     width: 320px;
     height: 320px;
     border: 1px #565752 solid;
-}
-
-#sub-svg {
     margin-top: 1px;
-}
-
-#error-message {
-    color: red;
 }
 
 .svg-child-element {
@@ -106,12 +155,4 @@ a:hover {
 
 .highlight {
     background: #ddd;
-}
-
-.footer {
-    font-size: 10px;
-    padding-top: 16px;
-    padding-left: 20px;
-    padding-bottom: 1px;
-    clear: both;
 }

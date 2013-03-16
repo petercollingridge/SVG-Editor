@@ -10,24 +10,23 @@
 
 	<body>
 
-	<h1>SVG Editor</h1>
+	<div id="header">
+        <span id="title">SVG Editor</span>
+        <span class="header-item enabled" id="toolbar-input">Input</span>
+        <span class="header-item" id="toolbar-optimise">Optimise</span>
+        <span class="header-item" id="toolbar-output">Output</span>
+    </div>
+    
     <div class="page-content">
         <div id="input-area">
-            <p>Paste SVG code in the box below and click Load to get an easy-to-edit version of the code</p>
-
-            <div class="section-content">
-                <textarea id="input-svg" class="io-box" title="Paste SVG code here" placeholder="Paste SVG code here..." ></textarea>
-                <div><input type="submit" id="load-button" class="button" value="Load" /></div>
-                <div><input type="submit" id="load-example-button" class="button" value="Load Example" /></div>
-                <div id="error-message"> </div>
+            <textarea id="input-svg" class="io-box" title="Paste SVG code here" placeholder="Paste SVG code here..." ></textarea>
+            <div>
+                <input type="submit" id="load-button" class="button" value="Load" />
+                <input type="submit" id="load-example-button" class="button" value="Load Example" />
             </div>
         </div>
       
         <div id="output-area" style="display:none;">
-            <p id="example-svg-attribution" style="display:none;">
-                Mad scientist SVG from <a href="http://commons.wikimedia.org/wiki/File:Mad_scientist.svg">Wikimedia</a>,
-                drawn by J.J. and converted to SVG by <a href="http://commons.wikimedia.org/wiki/User:Antilived">Antilived</a>.
-            </p>
             <div class="svg-image-container">
                 <div class="svg-image" id="full-svg">
                     <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="320" height="320">
@@ -80,7 +79,19 @@
                 </div>
             </div>
             <div id="svg-tree" class="io-box"></div>
-            <div id="svg-analysis" class="io-box"></div>
+            <div id="svg-analysis">
+                <div>Decimal places:
+                    <select id="decimal-places" name="decimal-places">
+                        <option value="unchanged" selected>Unchanged</option>
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </div>
+                <h2 id="element-name" ></h2>
+                <div id="element-attributes" class="io-box"></div>
+            </div>
         </div>
 
     <div id="scientist-example">
@@ -461,7 +472,13 @@
     </div>
         
     </div>
-    <div class="footer">This website was created by <a href="http://www.petercollingridge.co.uk">Peter Collingridge</a>.</div>
+    <div id="footer">
+        This website was created by <a href="http://www.petercollingridge.co.uk">Peter Collingridge</a>.
+        <span id="example-svg-attribution" style="display:none;">
+            Mad scientist SVG from <a href="http://commons.wikimedia.org/wiki/File:Mad_scientist.svg">Wikimedia</a>,
+            drawn by J.J. and converted to SVG by <a href="http://commons.wikimedia.org/wiki/User:Antilived">Antilived</a>.
+        </span>
+    </div>
 
   </body>
 </html>
