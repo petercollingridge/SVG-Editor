@@ -5,6 +5,7 @@
     <title>SVG Editor</title>
 		<script type="text/javascript" src="jquery.js"></script>
 		<script type="text/javascript" src="svg-editor.js"></script>
+		<script type="text/javascript" src="editor-interface.js"></script>
         <link type="text/css" rel="stylesheet" href="main.css" />
 	<head>
 
@@ -12,14 +13,14 @@
 
 	<div id="header">
         <span id="title">SVG Editor</span>
-        <span class="header-item enabled" id="toolbar-input">Input</span>
-        <span class="header-item" id="toolbar-optimise">Optimise</span>
-        <span class="header-item" id="toolbar-output">Output</span>
+        <span class="toolbar-item enabled selected" id="toolbar-input">Input</span>
+        <span class="toolbar-item" id="toolbar-optimise">Optimise</span>
+        <span class="toolbar-item" id="toolbar-output">Output</span>
     </div>
     
     <div class="page-content">
         <div id="input-area">
-            <textarea id="input-svg" class="io-box" title="Paste SVG code here" placeholder="Paste SVG code here..." ></textarea>
+            <textarea id="input-svg" class="io-box" title="Paste SVG code here" placeholder="Paste SVG code here and click the Load button" ></textarea>
             <div>
                 <input type="submit" id="load-button" class="button" value="Load" />
                 <input type="submit" id="load-example-button" class="button" value="Load Example" />
@@ -27,9 +28,37 @@
         </div>
       
         <div id="output-area" style="display:none;">
+            <div id="svg-code-container">
+                <div id="svg-tree" class="io-box"></div>
+                <div id="svg-analysis">
+                    <div>Decimal places:
+                        <select id="decimal-places" name="decimal-places">
+                            <option value="unchanged" selected>Unchanged</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+                    <h2 id="element-name" ></h2>
+                    <div id="element-attributes" class="io-box"></div>
+                </div>
+            </div>
+            
             <div class="svg-image-container">
                 <div class="svg-image" id="full-svg">
                     <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="320" height="320">
+                        <script type="text/ecmascript"><![CDATA[
+                            function sendClickToParentDocument(evt) {
+                                var target = evt.target;
+                                if (target.correspondingUseElement) {
+                                    target = target.correspondingUseElement;
+                                }
+                                if (window.parent.selectElement) {
+                                    window.parent.selectElement(target.id);
+                                }
+                            }
+                        ]]></script>
                         <g id="full-svg-transform">
                             <g id="full-svg-wrapper"></g>
                             <rect id="highlight-rect" fill="none" stroke="#f00" stroke-width="2"/>
@@ -78,23 +107,9 @@
                     </svg>
                 </div>
             </div>
-            <div id="svg-tree" class="io-box"></div>
-            <div id="svg-analysis">
-                <div>Decimal places:
-                    <select id="decimal-places" name="decimal-places">
-                        <option value="unchanged" selected>Unchanged</option>
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                    </select>
-                </div>
-                <h2 id="element-name" ></h2>
-                <div id="element-attributes" class="io-box"></div>
-            </div>
         </div>
 
-    <div id="scientist-example">
+    <div id="scientist-example" style="display:none;">
         <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 <svg
