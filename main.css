@@ -23,6 +23,12 @@ h2 {
     color: #444;
 }
 
+h3 {
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 5px;
+}
+
 #header {
     position: fixed;
     top: 0;
@@ -120,6 +126,10 @@ textarea {
             box-sizing: border-box;
     resize: vertical;
     outline: none;
+}
+
+#optimise-area input{
+    margin-left: 16px;
 }
 
 #svg-code-container {
