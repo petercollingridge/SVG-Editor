@@ -70,9 +70,9 @@ var loadSVG = function(svg_string) {
     svg_tree = new SVG_Tree(svg_string);
     //svg_tree.cleanStyles();
     //svg_tree.removeNamespaces(["inkscape", "sodipodi"]);
-    //svg_tree.setDecimalPlaces(2);
     svg_tree.createMap($('#svg-tree'));
 
+    // Draw map
     $('.svg-element-div').hover(
         function(evt) {
             $('.svg-element-div').removeClass('highlight');
@@ -89,6 +89,19 @@ var loadSVG = function(svg_string) {
     drawSVG("full-svg", svg_tree.root.children);
     loadWindow("edit");
     
+    // Add namespaces to optimise window
+    var ns_div = $('#remove-namespaces')
+    ns_div.empty();
+    for (var ns in svg_tree.namespaces) {
+        if (ns !== 'svg') {
+            ns_div.append($('<input type="checkbox" class="remove-namespace" name="' + ns + '"/>' + ns +'<br/>'));
+        }
+    }
+    $('.remove-namespace').change(function(evt) {
+        svg_tree.namespaces[this.name] = !this.checked;
+    });
+
+
     // Enable options
     $('.toolbar-item').addClass("enabled");
 };

@@ -164,10 +164,14 @@ var SVG_Element = function(element, tree, parents) {
     };
     
     // Write a tag and its attributes
-    this.writeTag = function() {     
+    this.writeTag = function() {
         var tag = '<' + this.tag;
 
-        for (var attr in this.attributes){
+        for (var attr in this.attributes) {
+            if (attr.indexOf(':') !== -1 && this.tree.namespaces[attr.split(':')[0]] === false) {
+                continue;
+            }
+
             tag += ' ' + attr + '="';
             tag += (this.tag === "path" && attr === "d") ? this.writePath(this.tree.dp_function) : this.tree.dp_function(this.attributes[attr]);
             tag += '"';
@@ -215,7 +219,7 @@ var SVG_Element = function(element, tree, parents) {
         return str + '\n';
     };
     
-    // For create SVG images of the element
+    // For creating SVG images of the element
     this.toJQueryObject = function(parent) {
         var $element = $('<' + this.tag + '></' + this.tag + '>');
         $element.attr(this.attributes);
@@ -266,21 +270,7 @@ var SVG_Element = function(element, tree, parents) {
             this.children[child].cleanStyles();
         }
     };
-    
-    this.removeNamespaces = function(namespaces) {
-        for (ns in namespaces) {
-            for (attr in this.attributes) {
-                var attr_split = attr.split(':');
-                if (attr_split.length === 2 && attr_split[0] === namespaces[ns]) {
-                    delete this.attributes[attr];
-                }
-            }
-        }
-        
-        for (var child in this.children) {
-            this.children[child].removeNamespaces(namespaces);
-        }
-    };
+
 };
 
 // Wrapper for tree of elements within the SVG
@@ -291,9 +281,20 @@ var SVG_Tree = function(svg_string) {
     
     this.id_to_element = {};
     this.element_counts = {};
+    this.namespaces = {};
     this.root = new SVG_Element(this.tree, this, []);
     
-    this.setDecimalPlaces = function (decimal_places) {
+    this.findNamespaces = function() {
+        for (attr in this.root.attributes) {
+            if (attr.slice(0,6) === 'xmlns:') {
+                var ns = attr.split(':')[1];
+                this.namespaces[ns] = true;
+            }
+        }
+    };
+    this.findNamespaces();
+
+    this.setDecimalPlaces = function(decimal_places) {
         if (!isNaN(parseInt(decimal_places))) {
             var scale = Math.pow(10, decimal_places);
             this.dp_function = function(x) {
@@ -306,7 +307,8 @@ var SVG_Tree = function(svg_string) {
         } else {
             this.dp_function = function(x) { return x; };
         }
-    }
+    };
+    
     this.setDecimalPlaces('null');
     
     this.cleanStyles = function() {
