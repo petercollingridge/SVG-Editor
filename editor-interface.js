@@ -1,4 +1,3 @@
-
 // Show the given window and hide the others
 var loadWindow = function(item) {
     var windows = ["input", "optimise", "edit", "output"];
@@ -12,6 +11,10 @@ var loadWindow = function(item) {
             $('#' + window + '-area').hide();
             $('#toolbar-' + window).removeClass('selected');
         }
+    }
+    
+    if (item === "output") {
+        $('#output-svg-code').text(svg_tree.root.toString());
     }
 }
 
@@ -114,4 +117,9 @@ $(document).ready(function() {
         var window = windows[i];
         $('#toolbar-' + window).on('click', getToolbarClickFunction(window));
     }
+    
+    // Optimise options
+    $('#decimal-places').change(function() {
+        svg_tree.setDecimalPlaces($('#decimal-places').val());
+    });
 });
