@@ -149,6 +149,10 @@ var SVG_Element = function(element, tree, parents) {
             var table = $('<table></table>');
             
             for (var attr in this.attributes){
+                if (attr.indexOf(':') !== -1 && this.tree.namespaces[attr.split(':')[0]] === false) {
+                   continue;
+                }
+
                 attribute_count++;
                 var row = $('<tr></tr>');
                 row.append($('<td>' + attr + '</td>'));
@@ -205,6 +209,10 @@ var SVG_Element = function(element, tree, parents) {
     };
     
     this.toString = function(depth) {
+        if (this.tag.indexOf(':') !== -1 && this.tree.namespaces[this.tag.split(':')[0]] === false) {
+            return "";
+        }
+
         var depth = depth | 0;
         var indent = new Array( depth + 1 ).join('  ');
         var str = indent + this.writeTag();
@@ -234,7 +242,11 @@ var SVG_Element = function(element, tree, parents) {
     
     // For creating the element map
     // Output by adding a div to the output and write children as nested divs
-    this.createMap = function(output) {    
+    this.createMap = function(output) {
+        if (this.tag.indexOf(':') !== -1 && this.tree.namespaces[this.tag.split(':')[0]] === false) {
+            return;
+        }
+        
         var element_div = $('<div></div>');
 
         element_div.attr({id: "map-" + this.id});
