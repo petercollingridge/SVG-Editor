@@ -293,10 +293,10 @@ var SVG_Tree = function(svg_string) {
     this.element_counts = {};
     this.root = new SVG_Element(this.tree, this, []);
     
-    this.setDecimalPlaceFunction = function(decimal_places) {
+    this.setDecimalPlaces = function (decimal_places) {
         if (!isNaN(parseInt(decimal_places))) {
             var scale = Math.pow(10, decimal_places);
-            return function(x) {
+            this.dp_function = function(x) {
                 if (isNaN(parseFloat(x))) {
                     return x; 
                 } else {
@@ -304,12 +304,8 @@ var SVG_Tree = function(svg_string) {
                 }
             };
         } else {
-            return function(x) { return x; };
+            this.dp_function = function(x) { return x; };
         }
-    };
-    
-    this.setDecimalPlaces = function (decimal_places) {
-        this.dp_function = this.setDecimalPlaceFunction(decimal_places);
     }
     this.setDecimalPlaces('null');
     
