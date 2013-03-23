@@ -23,17 +23,6 @@ var defaultStyles = {
     "font-variant": "normal"
 };
 
-var setDecimalPlaceFunction = function(decimal_places) {
-    var scale = Math.pow(10, decimal_places);
-    return function(x) {
-        if (isNaN(parseFloat(x))) {
-            return x; 
-        } else {
-            return "" + Math.round(parseFloat(x) * scale) / scale;
-        }
-    };
-};
-
 var parseStyle = function(style_string, dp_function) {
     old_styles = style_string.split(/\s*;\s*/);
     new_styles = {};
@@ -147,23 +136,31 @@ var SVG_Element = function(element, tree, parents) {
         for (var i in this.parents) {
             breadcrumbs.append($('<span>' + this.parents[i].writeLabel() + '</span>'))
         }
-        breadcrumbs.append($('<span>' + this.writeLabel() + '</span>'))
+        breadcrumbs.append($('<span class="selected">' + this.writeLabel() + '</span>'))
     
         var attributes_name_div = $('#element-attributes');
         attributes_name_div.empty();
-        attributes_name_div.append($('<h3>Attributes</h3>'));
         
+        var attributes_title = $('<h3></h3>');
+        attributes_name_div.append(attributes_title);
+        
+        var attribute_count = 0
         if (this.attributes) {
             var table = $('<table></table>');
             
             for (var attr in this.attributes){
+                attribute_count++;
                 var row = $('<tr></tr>');
                 row.append($('<td>' + attr + '</td>'));
-                row.append($('<td>' + this.attributes[attr] + '</td>'));
+                var value = (this.tag === "path" && attr === "d") ? this.writePath(this.tree.dp_function) : this.tree.dp_function(this.attributes[attr]);
+                row.append($('<td>' + value + '</td>'));
                 table.append(row); 
             }   
-            attributes_name_div.append(table)
-        }  
+            attributes_name_div.append(table);
+        }
+        
+        attributes_title.text('Attributes (' + attribute_count + ')');
+        
     };
     
     // Write a tag and its attributes
@@ -204,6 +201,7 @@ var SVG_Element = function(element, tree, parents) {
     };
     
     this.toString = function(depth) {
+        var depth = depth | 0;
         var indent = new Array( depth + 1 ).join('  ');
         var str = indent + this.writeTag();
         
@@ -295,10 +293,25 @@ var SVG_Tree = function(svg_string) {
     this.element_counts = {};
     this.root = new SVG_Element(this.tree, this, []);
     
+    this.setDecimalPlaceFunction = function(decimal_places) {
+        if (!isNaN(parseInt(decimal_places))) {
+            var scale = Math.pow(10, decimal_places);
+            return function(x) {
+                if (isNaN(parseFloat(x))) {
+                    return x; 
+                } else {
+                    return "" + Math.round(parseFloat(x) * scale) / scale;
+                }
+            };
+        } else {
+            return function(x) { return x; };
+        }
+    };
+    
     this.setDecimalPlaces = function (decimal_places) {
-        this.dp_function = setDecimalPlaceFunction(decimal_places);
+        this.dp_function = this.setDecimalPlaceFunction(decimal_places);
     }
-    this.setDecimalPlaces(1);
+    this.setDecimalPlaces('null');
     
     this.cleanStyles = function() {
         this.root.cleanStyles();
@@ -312,9 +325,6 @@ var SVG_Tree = function(svg_string) {
         output.empty();
         this.root.createMap(output);
     };
-    
-    var s = this.root.toString(0);
-    $('#output-svg-code').text(s);
 };
 
 var svg_tree;
