@@ -158,6 +158,11 @@ textarea {
     border-bottom-right-radius: 6px;
 }
 
+#breadcrumbs span.selected {
+    background: #fff;
+    border: 2px solid #888;
+}
+
 #svg-image-container {
     position: absolute;
     top: 34px;
