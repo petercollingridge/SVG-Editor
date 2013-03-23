@@ -12,14 +12,15 @@
 	<body>
 
 	<div id="header">
-        <span id="title">SVG Editor</span>
+        <h1>SVG Editor</h1>
         <span class="toolbar-item enabled selected" id="toolbar-input">Input</span>
         <span class="toolbar-item" id="toolbar-optimise">Optimise</span>
+        <span class="toolbar-item" id="toolbar-edit">Edit</span>
         <span class="toolbar-item" id="toolbar-output">Output</span>
     </div>
     
     <div class="page-content">
-        <div id="input-area">
+        <div id="input-area" class="content-area">
             <textarea id="input-svg" class="io-box" title="Paste SVG code here" placeholder="Paste SVG code here and click the Load button" ></textarea>
             <div>
                 <input type="submit" id="load-button" class="button" value="Load" />
@@ -27,25 +28,28 @@
             </div>
         </div>
       
-        <div id="output-area" style="display:none;">
+        <div id="optimise-area" class="content-area" style="display:none;">
+            <div>Decimal places:
+                <select id="decimal-places" name="decimal-places">
+                    <option value="unchanged" selected>Unchanged</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+        </div>
+      
+        <div id="edit-area" style="display:none;">
             <div id="svg-code-container">
                 <div id="svg-tree" class="io-box"></div>
-                <div id="svg-analysis">
-                    <div>Decimal places:
-                        <select id="decimal-places" name="decimal-places">
-                            <option value="unchanged" selected>Unchanged</option>
-                            <option value="0">0</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                        </select>
-                    </div>
-                    <h2 id="element-name" ></h2>
-                    <div id="element-attributes" class="io-box"></div>
+                <div id="element-analysis">
+                    <div id="breadcrumbs"></div>
+                    <div id="element-attributes"></div>
                 </div>
             </div>
             
-            <div class="svg-image-container">
+            <div id="svg-image-container">
                 <div class="svg-image" id="full-svg">
                     <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.0" width="320" height="320">
                         <script type="text/ecmascript"><![CDATA[
@@ -107,6 +111,11 @@
                     </svg>
                 </div>
             </div>
+            
+        </div>
+        
+        <div id="output-area" class="content-area" style="display:none;">
+            <textarea id="output-svg-code" class="io-box">Output</textarea>
         </div>
 
     <div id="scientist-example" style="display:none;">
